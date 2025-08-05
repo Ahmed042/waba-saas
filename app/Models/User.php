@@ -69,4 +69,14 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+    public function messageQuota()
+{
+    return $this->hasOne(MessageQuota::class);
+}
+
+public function payments()
+{
+    return $this->hasMany(Payment::class);
+}
+
 }

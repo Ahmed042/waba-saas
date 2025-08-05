@@ -11,7 +11,7 @@ class ContactController extends Controller
 {
     // Show contacts page
     public function index($company)
-    {
+    {  
         $client = Client::where('company', $company)->firstOrFail();
         $contacts = Contact::where('client_id', $client->id)->latest()->get();
         return view('client.contacts', compact('company', 'contacts'));
@@ -37,6 +37,7 @@ class ContactController extends Controller
     // Import contacts via CSV
     public function import(Request $request, $company)
     {
+
         $client = Client::where('company', $company)->firstOrFail();
         $request->validate([
             'csv_file' => 'required|mimes:csv,txt',

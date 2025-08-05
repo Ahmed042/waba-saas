@@ -30,7 +30,10 @@ public function store(Request $request)
             'email' => 'required|email|unique:clients,email',
             'password' => 'required|string|min:6',
             'type' => 'required|in:official,non_official',
-            // No need to validate all optional fields here — handle conditionally
+            'package_name' => 'nullable|string|max:255',
+            'total_messages_allowed' => 'nullable|integer|min:0',
+            'subscription_date' => 'nullable|date',
+            'renewal_date' => 'nullable|date',
         ]);
 
         $data = [
@@ -39,6 +42,10 @@ public function store(Request $request)
             'password' => Hash::make($validated['password']),
             'type' => $validated['type'],
             'role' => 'client',
+            'package_name' => $validated['package_name'] ?? null,
+            'total_messages_allowed' => $validated['total_messages_allowed'] ?? null,
+            'subscription_date' => $validated['subscription_date'] ?? null,
+            'renewal_date' => $validated['renewal_date'] ?? null,
         ];
 
         if ($validated['type'] === 'official') {
@@ -63,6 +70,7 @@ public function store(Request $request)
     }
 }
 
+
     public function edit(Client $client)
     {
         return view('admin.clients.edit', compact('client'));
@@ -71,16 +79,22 @@ public function store(Request $request)
     public function update(Request $request, Client $client)
     {
         $validated = $request->validate([
-            'name' => 'required|string',
-            'email' => 'required|email|unique:clients,email,' . $client->id,
-            'phone' => 'nullable|string',
-            'business_name' => 'nullable|string',
-            'country' => 'nullable|string',
-            'api_type' => 'required|in:official,unofficial',
-            'bot_type' => 'nullable|string',
-            'business_type' => 'nullable|string',
-            'status' => 'required|in:active,trial,suspended',
-        ]);
+    'name' => 'required|string',
+    'email' => 'required|email|unique:clients,email,' . $client->id,
+    'phone' => 'nullable|string',
+    'business_name' => 'nullable|string',
+    'country' => 'nullable|string',
+    'api_type' => 'required|in:official,unofficial',
+    'bot_type' => 'nullable|string',
+    'business_type' => 'nullable|string',
+    'status' => 'required|in:active,trial,suspended',
+    // new fields:
+    'package_name' => 'nullable|string|max:255',
+    'total_messages_allowed' => 'nullable|integer|min:0',
+    'subscription_date' => 'nullable|date',
+    'renewal_date' => 'nullable|date',
+]);
+
 
         $credentials = $request->only(['api_credentials']); // optional
 

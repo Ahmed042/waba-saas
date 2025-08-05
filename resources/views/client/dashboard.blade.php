@@ -20,7 +20,7 @@
             <div class="card border-0 shadow-sm rounded-4">
                 <div class="card-body text-center">
                     <div class="mb-2"><i class="bi bi-people-fill fs-2 text-primary"></i></div>
-                    <div class="fs-3 fw-bold">1,280</div>
+                    <div class="fs-3 fw-bold">{{ $activeContacts }}</div>
                     <div class="text-muted">Active Contacts</div>
                 </div>
             </div>
@@ -29,7 +29,7 @@
             <div class="card border-0 shadow-sm rounded-4">
                 <div class="card-body text-center">
                     <div class="mb-2"><i class="bi bi-chat-dots-fill fs-2 text-success"></i></div>
-                    <div class="fs-3 fw-bold">6,500</div>
+                    <div class="fs-3 fw-bold">{{ $messagesSent }}</div>
                     <div class="text-muted">Messages Sent</div>
                 </div>
             </div>
@@ -37,17 +37,17 @@
         <div class="col-6 col-lg-3">
             <div class="card border-0 shadow-sm rounded-4">
                 <div class="card-body text-center">
-                    <div class="mb-2"><i class="bi bi-diagram-3 fs-2 text-warning"></i></div>
-                    <div class="fs-3 fw-bold">8</div>
-                    <div class="text-muted">Contact Lists</div>
+                    <div class="mb-2"><i class="bi bi-pie-chart-fill fs-2 text-info"></i></div>
+                    <div class="fs-3 fw-bold">{{ $remainingMessages }}</div>
+                    <div class="text-muted">Remaining Messages</div>
                 </div>
             </div>
         </div>
         <div class="col-6 col-lg-3">
             <div class="card border-0 shadow-sm rounded-4">
                 <div class="card-body text-center">
-                    <div class="mb-2"><i class="bi bi-pie-chart-fill fs-2 text-info"></i></div>
-                    <div class="fs-3 fw-bold">92%</div>
+                    <div class="mb-2"><i class="bi bi-activity fs-2 text-primary"></i></div>
+                    <div class="fs-3 fw-bold">{{ $quota }}%</div>
                     <div class="text-muted">Quota Remaining</div>
                 </div>
             </div>
@@ -61,10 +61,7 @@
                     <div class="fw-bold fs-5">Messaging Activity (This Month)</div>
                 </div>
                 <div class="card-body">
-                    <!-- Dummy Chart -->
-                    <div class="d-flex align-items-center justify-content-center" style="height:200px;">
-                        <span class="text-muted">[Chart Placeholder - Will show daily messages sent]</span>
-                    </div>
+                    <canvas id="messagesChart" height="100"></canvas>
                 </div>
             </div>
         </div>
@@ -92,7 +89,7 @@
             </div>
         </div>
     </div>
-    <!-- Activity Log Preview (Optional) -->
+    <!-- Activity Log Preview (Dynamic) -->
     <div class="row mt-5">
         <div class="col-12">
             <div class="card border-0 rounded-4 shadow-sm">
@@ -101,14 +98,49 @@
                 </div>
                 <div class="card-body pt-2">
                     <ul class="list-group list-group-flush">
-                        <li class="list-group-item px-0">You sent <b>Broadcast Message</b> to <b>Sales Team</b> (300 contacts)</li>
-                        <li class="list-group-item px-0">Imported 500 new contacts from <b>marketing.csv</b></li>
-                        <li class="list-group-item px-0">Added <b>Support Team</b> to Contact Lists</li>
-                        <li class="list-group-item px-0">Message template <b>New Offer</b> submitted for approval</li>
+                        @foreach($recentActivity as $item)
+                            <li class="list-group-item px-0">{!! $item !!}</li>
+                        @endforeach
                     </ul>
                 </div>
             </div>
         </div>
     </div>
 </div>
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var ctx = document.getElementById('messagesChart').getContext('2d');
+    var messagesChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: @json($labels),
+            datasets: [{
+                label: 'Messages Sent',
+                data: @json($data),
+                backgroundColor: 'rgba(56, 182, 255, 0.6)',
+                borderColor: 'rgba(56, 182, 255, 1)',
+                borderWidth: 2,
+                borderRadius: 6,
+                maxBarThickness: 16
+            }]
+        },
+        options: {
+            scales: {
+                x: {
+                    ticks: { font: { size: 12 } }
+                },
+                y: {
+                    beginAtZero: true,
+                    ticks: { stepSize: 1 }
+                }
+            },
+            plugins: {
+                legend: { display: false }
+            }
+        }
+    });
+});
+</script>
 @endsection

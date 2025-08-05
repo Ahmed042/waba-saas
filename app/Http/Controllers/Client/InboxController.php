@@ -11,7 +11,7 @@ use App\Models\Message;
 class InboxController extends Controller
 {
     // Inbox landing: List contacts with recent messages
-    public function index($company, $contactId = null)
+    public function index($company, $contact = null)
 {
     $client = Client::where('company', $company)->firstOrFail();
 
@@ -26,8 +26,8 @@ class InboxController extends Controller
 
     $selectedContact = null;
     $messages = collect();
-    if ($contactId) {
-        $selectedContact = Contact::where('client_id', $client->id)->where('id', $contactId)->first();
+    if ($contact) {
+        $selectedContact = Contact::where('client_id', $client->id)->where('id', $contact)->first();
         if ($selectedContact) {
             $messages = Message::where('client_id', $client->id)
                 ->where('contact_id', $selectedContact->id)
@@ -41,10 +41,10 @@ class InboxController extends Controller
 
 
     // Show chat with a contact
-    public function chat($company, $contactId)
+    public function chat($company, $contact)
     {
         $client = Client::where('company', $company)->firstOrFail();
-        $contact = Contact::where('client_id', $client->id)->where('id', $contactId)->firstOrFail();
+        $contact = Contact::where('client_id', $client->id)->where('id', $contact)->firstOrFail();
 
         // Show last 50 messages
         $messages = Message::where('client_id', $client->id)
@@ -57,26 +57,51 @@ class InboxController extends Controller
     }
 
     // Send a message from chat
-    public function send(Request $request, $company, $contactId)
-    {
-        $client = Client::where('company', $company)->firstOrFail();
-        $contact = Contact::where('client_id', $client->id)->where('id', $contactId)->firstOrFail();
+   public function send(Request $request, $company, $contact)
+{
+    $client = Client::where('company', $company)->firstOrFail();
+    $contact = Contact::where('client_id', $client->id)->where('id', $contact)->firstOrFail();
 
-        $request->validate([
-            'message' => 'required|string|max:2000',
-        ]);
+   $request->validate([
+    'message' => 'nullable|string|max:2000', // make message nullable
+    'audio' => 'nullable|file|mimes:mp3,wav,ogg,webm|max:2048', // 2MB, adjust as needed
+]);
+$audioPath = null;
+if ($request->hasFile('audio')) {
+    $audioPath = $request->file('audio')->store('voice', 'public');
+}
 
-        Message::create([
-            'client_id' => $client->id,
-            'contact_id' => $contact->id,
-            'message' => $request->message,
-            'status' => 'pending',
-            'direction' => 'sent',
-        ]);
 
-        // Optionally: send via WhatsApp API
+    $msg = Message::create([
+        'client_id' => $client->id,
+        'contact_id' => $contact->id,
+        'message' => $request->message,
+        'audio' => $audioPath,
+        'status' => 'pending',
+        'direction' => 'sent',
+    ]);
 
-        return redirect()->route('client.inbox.chat', ['company' => $company, 'contact' => $contactId])
-            ->with('success', 'Message sent.');
+    if ($request->ajax()) {
+        // Return rendered message bubble HTML for the just sent message
+        $html = view('partials.single-message', ['msg' => $msg])->render();
+        return response()->json(['html' => $html]);
     }
+
+    // Fallback for non-AJAX
+    return redirect()->route('client.inbox.chat', ['company' => $company, 'contact' => $contact])
+        ->with('success', 'Message sent.');
+}
+
+public function getMessages($company, $contact)
+{
+    $messages = Message::where('contact_id', $contact)
+        ->orderBy('created_at', 'asc')
+        ->get();
+
+    return response()->json([
+        'html' => view('partials.chat-messages', compact('messages'))->render()
+    ]);
+}
+
+
 }

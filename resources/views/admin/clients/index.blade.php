@@ -167,6 +167,23 @@
                 <button type="button" class="btn btn-outline-primary active" id="officialBtn">Official</button>
                 <button type="button" class="btn btn-outline-secondary" id="nonOfficialBtn">Non-Official</button>
               </div>
+               <!-- Subscription/Package Fields (Always visible) -->
+              <div class="mb-3">
+                <label class="form-label">Package Name</label>
+                <input type="text" class="form-control" name="package_name" value="{{ old('package_name') }}">
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Total Messages Allowed / Month</label>
+                <input type="number" min="0" class="form-control" name="total_messages_allowed" value="{{ old('total_messages_allowed') }}">
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Subscription Date</label>
+                <input type="date" class="form-control" name="subscription_date" value="{{ old('subscription_date') }}">
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Renewal Date</label>
+                <input type="date" class="form-control" name="renewal_date" value="{{ old('renewal_date') }}">
+              </div>
 
               <div id="officialFields">
                 <div class="mb-3">
